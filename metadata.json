@@ -1,0 +1,6 @@
+{
+  "name": "Leave It",
+  "description": "A gamified, calm recovery companion for leaving habits behind",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
