@@ -10,6 +10,7 @@ export interface PledgeDocumentProps {
   nickname?: string;
   initialSignature?: string | null;
   onSaveSignature?: (sigDataUrl: string) => void;
+  onOpenReSignModal?: () => void;
   onChangeFields?: (fields: {
     reasons?: string;
     impacts?: string;
@@ -28,6 +29,7 @@ export function PledgeDocument({
   nickname = "",
   initialSignature = null,
   onSaveSignature,
+  onOpenReSignModal,
   onChangeFields,
   readOnly = false,
   lang,
@@ -195,229 +197,158 @@ export function PledgeDocument({
           </p>
         </div>
 
-        {/* Preamble */}
-        <div className="space-y-3 text-noir/90 dark:text-cotton/90 font-sans leading-relaxed">
-          <p className="bg-[#EFECE0]/60 p-3.5 rounded-2xl border border-[#D4CBB0]/40 dark:bg-[#241F1E] dark:border-[#3D3530]">
+        {/* Continuous Parchment Text Flow */}
+        <div className="space-y-5 text-noir/90 dark:text-cotton/90 font-sans leading-relaxed text-xs sm:text-sm">
+          {/* Preamble Paragraphs */}
+          <p>
             {isAr
               ? "أنا اليوم أقف مع نفسي بصدق، وأعترف أن هذه العادة أخذت مني أشياء كثيرة، وأن الاستمرار فيها لن يقودني إلى الحياة التي أريدها. لقد حان الوقت لأن أتوقف عن تأجيل التغيير، وأن أبدأ باستعادة وقتي، وطاقتي، وتركيزي، وثقتي بنفسي، وكل شيء أشعر أنني فقدته بسبب هذه العادة."
               : "Today I stand honestly with myself, acknowledging that this habit has taken so much from me, and that continuing it will not lead to the life I want. The time has come to stop postponing change, and to begin reclaiming my time, my energy, my focus, my self-confidence, and everything I feel I lost because of this habit."}
           </p>
 
-          <p className="bg-[#EFECE0]/60 p-3.5 rounded-2xl border border-[#D4CBB0]/40 dark:bg-[#241F1E] dark:border-[#3D3530]">
+          <p>
             {isAr
               ? "أنا لا أكتب هذا العهد لأنني أكره نفسي أو ألومها، بل لأنني أؤمن أنني أستحق حياة أفضل، وأن التغيير ممكن مهما طال الطريق. قد أتعثر، وقد تمر عليّ لحظات صعبة، لكنني لن أجعل لحظة ضعف واحدة تقرر مستقبلي كله."
               : "I do not write this pledge out of self-hatred or blame, but because I believe I deserve a better life, and that change is possible no matter how long the road. I may stumble, and difficult moments will come, but I will not let a single moment of weakness decide my entire future."}
           </p>
-        </div>
 
-        {/* Section 1 */}
-        <div className="space-y-2 rounded-2xl bg-[#EFECE0] p-4 dark:bg-[#241F1E] border border-[#D4CBB0]/50 dark:border-[#3D3530]">
-          <h2 className="font-bold text-cherry text-sm sm:text-base">
-            {isAr
-              ? "أولاً: لماذا أريد أن أترك هذه العادة؟"
-              : "1. Why do I want to break this habit?"}
-          </h2>
-          <p className="text-noir/80 dark:text-cotton/80 text-xs sm:text-sm leading-relaxed">
-            {isAr
-              ? "أريد أن أترك هذه العادة لأنني أعرف أنها لم تعد شيئًا أريده في حياتي، ولأنني أريد أن أكون أنا من يقرر ماذا أفعل، وليس العادة هي التي تقرر عني."
-              : "I want to break this habit because I know it is no longer something I want in my life, and because I want to be the one deciding what I do, not the habit deciding for me."}
-          </p>
-          <div className="pt-2">
-            <label className="block text-xs font-bold text-maroon dark:text-[#EDEBDE] mb-1.5">
+          {/* Section 1 */}
+          <div className="space-y-1.5 pt-1">
+            <h2 className="font-bold text-cherry text-sm sm:text-base">
               {isAr
-                ? "أكثر الأسباب التي تدفعني لتركها:"
-                : "The primary reasons driving me to break it:"}
-            </label>
-            {readOnly ? (
-              <div className="min-h-[60px] rounded-xl bg-white/70 p-3 text-xs sm:text-sm text-maroon font-medium dark:bg-[#1A1615] dark:text-[#EDEBDE] border border-[#D4CBB0]/40 dark:border-[#3D3530] whitespace-pre-wrap">
+                ? "أولاً: لماذا أريد أن أترك هذه العادة؟"
+                : "1. Why do I want to break this habit?"}
+            </h2>
+            <p>
+              {isAr
+                ? "أريد أن أترك هذه العادة لأنني أعرف أنها لم تعد شيئًا أريده في حياتي، ولأنني أريد أن أكون أنا من يقرر ماذا أفعل، وليس العادة هي التي تقرر عني."
+                : "I want to break this habit because I know it is no longer something I want in my life, and because I want to be the one deciding what I do, not the habit deciding for me."}
+            </p>
+            <p className="font-medium text-maroon dark:text-[#EDEBDE] pt-0.5">
+              <span className="font-bold text-cherry">
+                {isAr ? "أكثر الأسباب التي تدفعني لتركها: " : "The primary reasons driving me to break it: "}
+              </span>
+              <span>
                 {fieldReasons ||
                   (isAr
                     ? "استعادة حريتي وكرامتي وصحتي"
                     : "Regaining my freedom, dignity, and health")}
-              </div>
-            ) : (
-              <textarea
-                value={fieldReasons}
-                onChange={(e) => {
-                  setFieldReasons(e.target.value);
-                  updateFields({ reasons: e.target.value });
-                }}
-                rows={3}
-                placeholder={
-                  isAr
-                    ? "اكتب هنا الأسباب التي تدفعك لترك العادة..."
-                    : "Write here the reasons driving you to break the habit..."
-                }
-                className="w-full rounded-xl border border-[#D4CBB0] bg-white/90 p-3 text-xs sm:text-sm text-maroon outline-none focus:border-cherry focus:ring-1 focus:ring-cherry dark:bg-[#121010] dark:border-[#3D3530] dark:text-[#EDEBDE] transition-all"
-              />
-            )}
+              </span>
+            </p>
           </div>
-        </div>
 
-        {/* Section 2 */}
-        <div className="space-y-2 rounded-2xl bg-[#EFECE0] p-4 dark:bg-[#241F1E] border border-[#D4CBB0]/50 dark:border-[#3D3530]">
-          <h2 className="font-bold text-cherry text-sm sm:text-base">
-            {isAr ? "ثانياً: ماذا أخذت مني هذه العادة؟" : "2. What has this habit taken from me?"}
-          </h2>
-          <p className="text-noir/80 dark:text-cotton/80 text-xs sm:text-sm leading-relaxed">
-            {isAr
-              ? "أعترف بصدق أن هذه العادة أثرت في جوانب من حياتي، وأنني لا أريد أن أسمح لها بأخذ المزيد مني. أكثر الأشياء التي تأثرت في حياتي هي:"
-              : "I honestly admit that this habit has affected areas of my life, and I refuse to let it take any more from me. The things most affected in my life are:"}
-          </p>
-          <div className="pt-2">
-            <label className="block text-xs font-bold text-maroon dark:text-[#EDEBDE] mb-1.5">
+          {/* Section 2 */}
+          <div className="space-y-1.5 pt-1">
+            <h2 className="font-bold text-cherry text-sm sm:text-base">
+              {isAr ? "ثانياً: ماذا أخذت مني هذه العادة؟" : "2. What has this habit taken from me?"}
+            </h2>
+            <p>
               {isAr
-                ? "أكثر الأشياء التي تأثرت في حياتي هي:"
-                : "The things most affected in my life are:"}
-            </label>
-            {readOnly ? (
-              <div className="min-h-[60px] rounded-xl bg-white/70 p-3 text-xs sm:text-sm text-maroon font-medium dark:bg-[#1A1615] dark:text-[#EDEBDE] border border-[#D4CBB0]/40 dark:border-[#3D3530] whitespace-pre-wrap">
+                ? "أعترف بصدق أن هذه العادة أثرت في جوانب من حياتي، وأنني لا أريد أن أسمح لها بأخذ المزيد مني."
+                : "I honestly admit that this habit has affected areas of my life, and I refuse to let it take any more from me."}
+            </p>
+            <p className="font-medium text-maroon dark:text-[#EDEBDE] pt-0.5">
+              <span className="font-bold text-cherry">
+                {isAr ? "أكثر الأشياء التي تأثرت في حياتي هي: " : "The things most affected in my life are: "}
+              </span>
+              <span>
                 {fieldImpacts ||
                   (isAr
                     ? "الندم والإنهاك وضياع الوقت"
                     : "Regret, physical exhaustion, and lost time")}
-              </div>
-            ) : (
-              <textarea
-                value={fieldImpacts}
-                onChange={(e) => {
-                  setFieldImpacts(e.target.value);
-                  updateFields({ impacts: e.target.value });
-                }}
-                rows={3}
-                placeholder={
-                  isAr
-                    ? "اكتب هنا الخسائر والأشياء التي أخذتها العادة منك..."
-                    : "Write here the losses and things this habit took from you..."
-                }
-                className="w-full rounded-xl border border-[#D4CBB0] bg-white/90 p-3 text-xs sm:text-sm text-maroon outline-none focus:border-cherry focus:ring-1 focus:ring-cherry dark:bg-[#121010] dark:border-[#3D3530] dark:text-[#EDEBDE] transition-all"
-              />
-            )}
+              </span>
+            </p>
           </div>
-        </div>
 
-        {/* Section 3 */}
-        <div className="space-y-2 rounded-2xl bg-[#EFECE0] p-4 dark:bg-[#241F1E] border border-[#D4CBB0]/50 dark:border-[#3D3530]">
-          <h2 className="font-bold text-cherry text-sm sm:text-base">
-            {isAr ? "ثالثاً: ماذا أريد أن أستعيد؟" : "3. What do I want to reclaim?"}
-          </h2>
-          <p className="text-noir/80 dark:text-cotton/80 text-xs sm:text-sm leading-relaxed">
-            {isAr
-              ? "أنا لا أترك هذه العادة لأحرم نفسي فقط، بل أتركها لأستعيد شيئًا أفضل. أتخيل حياتي بعد أن أتخلص منها، وأعرف أن كل يوم أبتعد فيه عنها هو يوم أقترب فيه من الشخص الذي أريد أن أكونه."
-              : "I am not breaking this habit merely to deprive myself, but to reclaim something far better. I picture my life after breaking free, knowing every day I stay away brings me closer to the person I want to be."}
-          </p>
-          <div className="pt-2">
-            <label className="block text-xs font-bold text-maroon dark:text-[#EDEBDE] mb-1.5">
+          {/* Section 3 */}
+          <div className="space-y-1.5 pt-1">
+            <h2 className="font-bold text-cherry text-sm sm:text-base">
+              {isAr ? "ثالثاً: ماذا أريد أن أستعيد؟" : "3. What do I want to reclaim?"}
+            </h2>
+            <p>
               {isAr
-                ? "الأشياء التي أتمنى أن تتحسن في حياتي بعد تركها:"
-                : "Things I hope to improve in my life after quitting:"}
-            </label>
-            {readOnly ? (
-              <div className="min-h-[60px] rounded-xl bg-white/70 p-3 text-xs sm:text-sm text-maroon font-medium dark:bg-[#1A1615] dark:text-[#EDEBDE] border border-[#D4CBB0]/40 dark:border-[#3D3530] whitespace-pre-wrap">
+                ? "أنا لا أترك هذه العادة لأحرم نفسي فقط، بل أتركها لأستعيد شيئًا أفضل. أتخيل حياتي بعد أن أتخلص منها، وأعرف أن كل يوم أبتعد فيه عنها هو يوم أقترب فيه من الشخص الذي أريد أن أكونه."
+                : "I am not breaking this habit merely to deprive myself, but to reclaim something far better. I picture my life after breaking free, knowing every day I stay away brings me closer to the person I want to be."}
+            </p>
+            <p className="font-medium text-maroon dark:text-[#EDEBDE] pt-0.5">
+              <span className="font-bold text-cherry">
+                {isAr
+                  ? "الأشياء التي أتمنى أن تتحسن في حياتي بعد تركها: "
+                  : "Things I hope to improve in my life after quitting: "}
+              </span>
+              <span>
                 {fieldGoals ||
                   (isAr
                     ? "الوصول لحياة أفضل وبناء مستقبل مشرق"
                     : "Reaching a better life and building a bright future")}
-              </div>
-            ) : (
-              <textarea
-                value={fieldGoals}
-                onChange={(e) => {
-                  setFieldGoals(e.target.value);
-                  updateFields({ goals: e.target.value });
-                }}
-                rows={3}
-                placeholder={
-                  isAr
-                    ? "اكتب هنا الأشياء التي تطمح لاستعادتها وتحسينها..."
-                    : "Write here the things you aspire to reclaim and improve..."
-                }
-                className="w-full rounded-xl border border-[#D4CBB0] bg-white/90 p-3 text-xs sm:text-sm text-maroon outline-none focus:border-cherry focus:ring-1 focus:ring-cherry dark:bg-[#121010] dark:border-[#3D3530] dark:text-[#EDEBDE] transition-all"
-              />
-            )}
+              </span>
+            </p>
           </div>
-        </div>
 
-        {/* Section 4 */}
-        <div className="space-y-2 rounded-2xl bg-[#EFECE0] p-4 dark:bg-[#241F1E] border border-[#D4CBB0]/50 dark:border-[#3D3530]">
-          <h2 className="font-bold text-cherry text-sm sm:text-base">
-            {isAr ? "رابعاً: خطتي عندما تأتي الرغبة" : "4. My plan when an urge strikes"}
-          </h2>
-          <p className="text-noir/80 dark:text-cotton/80 text-xs sm:text-sm leading-relaxed">
-            {isAr
-              ? "أعرف أن الرغبة قد تأتي فجأة، وقد تحاول إقناعي بأن أعود ولو لمرة واحدة. لكنني سأذكر نفسي في تلك اللحظة بسبب بدايتي، وبالأشياء التي كتبتها هنا. لن أتخذ قرارًا دائمًا بسبب شعور مؤقت."
-              : "I know an urge may come suddenly and try to convince me to go back 'just once'. But in that moment, I will remind myself why I started and what I wrote here. I will not make a permanent decision based on a temporary feeling."}
-          </p>
-          <div className="pt-2">
-            <label className="block text-xs font-bold text-maroon dark:text-[#EDEBDE] mb-1.5">
+          {/* Section 4 */}
+          <div className="space-y-1.5 pt-1">
+            <h2 className="font-bold text-cherry text-sm sm:text-base">
+              {isAr ? "رابعاً: خطتي عندما تأتي الرغبة" : "4. My plan when an urge strikes"}
+            </h2>
+            <p>
               {isAr
-                ? "عندما أشعر أن الرغبة أصبحت قوية، سأقوم بـ:"
-                : "When I feel the urge growing strong, I will:"}
-            </label>
-            {readOnly ? (
-              <div className="min-h-[60px] rounded-xl bg-white/70 p-3 text-xs sm:text-sm text-maroon font-medium dark:bg-[#1A1615] dark:text-[#EDEBDE] border border-[#D4CBB0]/40 dark:border-[#3D3530] whitespace-pre-wrap">
+                ? "أعرف أن الرغبة قد تأتي فجأة، وقد تحاول إقناعي بأن أعود ولو لمرة واحدة. لكنني سأذكر نفسي في تلك اللحظة بسبب بدايتي، وبالأشياء التي كتبتها هنا. لن أتخذ قرارًا دائمًا بسبب شعور مؤقت."
+                : "I know an urge may come suddenly and try to convince me to go back 'just once'. But in that moment, I will remind myself why I started and what I wrote here. I will not make a permanent decision based on a temporary feeling."}
+            </p>
+            <p className="font-medium text-maroon dark:text-[#EDEBDE] pt-0.5">
+              <span className="font-bold text-cherry">
+                {isAr
+                  ? "عندما أشعر أن الرغبة أصبحت قوية، سأقوم بـ: "
+                  : "When I feel the urge growing strong, I will: "}
+              </span>
+              <span>
                 {fieldEmergencyPlan ||
                   (isAr
                     ? "الوضوء، التغيير الفوري للمكان، واستخدام زر الفزعة"
                     : "Cold water/wudu, changing location immediately, and using the SOS button")}
-              </div>
-            ) : (
-              <textarea
-                value={fieldEmergencyPlan}
-                onChange={(e) => {
-                  setFieldEmergencyPlan(e.target.value);
-                  updateFields({ emergencyPlan: e.target.value });
-                }}
-                rows={3}
-                placeholder={
-                  isAr
-                    ? "اكتب هنا خطتك عند اشتداد الرغبة (مثال: الوضوء، الرياضة، زر الفزعة)..."
-                    : "Write your emergency plan when the urge strikes (e.g. cold water, workout, SOS button)..."
-                }
-                className="w-full rounded-xl border border-[#D4CBB0] bg-white/90 p-3 text-xs sm:text-sm text-maroon outline-none focus:border-cherry focus:ring-1 focus:ring-cherry dark:bg-[#121010] dark:border-[#3D3530] dark:text-[#EDEBDE] transition-all"
-              />
-            )}
+              </span>
+            </p>
           </div>
-        </div>
 
-        {/* Section 5: Pledge Declaration */}
-        <div className="space-y-3 rounded-2xl border-2 border-cherry/20 bg-cherry/5 p-4 sm:p-5 text-maroon dark:text-[#EDEBDE]">
-          <h2 className="font-bold text-cherry text-sm sm:text-base mb-2">
-            {isAr ? "خامساً: عهدي مع نفسي" : "5. My covenant with myself"}
-          </h2>
-          <p className="font-medium">
-            {isAr
-              ? "أعاهد نفسي أن أستمر في هذه الرحلة، وأن أتعامل مع كل يوم كفرصة جديدة لأثبت لنفسي أنني قادر على التغيير."
-              : "I pledge to myself to continue this journey, treating every day as a new opportunity to prove to myself that I am capable of change."}
-          </p>
-          <p className="font-medium">
-            {isAr
-              ? "إذا جاءتني لحظة ضعف، سأتذكر لماذا بدأت."
-              : "If a moment of weakness comes, I will remember why I started."}
-          </p>
-          <p className="font-medium">
-            {isAr
-              ? "وإذا تعثرت، لن أقول إن كل شيء انتهى؛ سأقف وأكمل."
-              : "And if I stumble, I will not say everything is over; I will stand up and keep going."}
-          </p>
-          <p className="font-medium">
-            {isAr
-              ? "وإذا حاولت العادة أن تعيدني إلى المكان الذي خرجت منه، سأقرأ هذا العهد وأتذكر كم كنت أريد أن أبتعد."
-              : "And if the habit tries to pull me back to where I left, I will read this pledge and remember how much I wanted to break free."}
-          </p>
-          <p className="font-medium">
-            {isAr
-              ? "أنا لا أبحث عن الكمال، بل عن التقدم. ولا أحتاج أن أقطع الطريق كله اليوم؛ يكفيني أن آخذ الخطوة التالية."
-              : "I am not looking for perfection, but for progress. I don't need to walk the entire path today; taking the next step is enough."}
-          </p>
-          <p className="font-bold text-cherry text-sm sm:text-base pt-1">
-            {isAr
-              ? "أنا اخترت أن أترك هذه العادة، لأن حياتي أكبر منها، ومستقبلي يستحق مني أن أحاول."
-              : "I chose to leave this habit because my life is greater than it, and my future deserves my effort."}
-          </p>
-          <p className="font-bold text-maroon dark:text-[#EDEBDE] text-sm sm:text-base">
-            {isAr ? "ومن هذه اللحظة، أبدأ من جديد." : "And from this moment, I start anew."}
-          </p>
+          {/* Section 5: Covenant Declaration */}
+          <div className="space-y-2 pt-2 text-maroon dark:text-[#EDEBDE]">
+            <h2 className="font-bold text-cherry text-sm sm:text-base">
+              {isAr ? "خامساً: عهدي مع نفسي" : "5. My covenant with myself"}
+            </h2>
+            <p className="font-medium">
+              {isAr
+                ? "أعاهد نفسي أن أستمر في هذه الرحلة، وأن أتعامل مع كل يوم كفرصة جديدة لأثبت لنفسي أنني قادر على التغيير."
+                : "I pledge to myself to continue this journey, treating every day as a new opportunity to prove to myself that I am capable of change."}
+            </p>
+            <p className="font-medium">
+              {isAr
+                ? "إذا جاءتني لحظة ضعف، سأتذكر لماذا بدأت."
+                : "If a moment of weakness comes, I will remember why I started."}
+            </p>
+            <p className="font-medium">
+              {isAr
+                ? "وإذا تعثرت، لن أقول إن كل شيء انتهى؛ سأقف وأكمل."
+                : "And if I stumble, I will not say everything is over; I will stand up and keep going."}
+            </p>
+            <p className="font-medium">
+              {isAr
+                ? "وإذا حاولت العادة أن تعيدني إلى المكان الذي خرجت منه، سأقرأ هذا العهد وأتذكر كم كنت أريد أن أبتعد."
+                : "And if the habit tries to pull me back to where I left, I will read this pledge and remember how much I wanted to break free."}
+            </p>
+            <p className="font-medium">
+              {isAr
+                ? "أنا لا أبحث عن الكمال، بل عن التقدم. ولا أحتاج أن أقطع الطريق كله اليوم؛ يكفيني أن آخذ الخطوة التالية."
+                : "I am not looking for perfection, but for progress. I don't need to walk the entire path today; taking the next step is enough."}
+            </p>
+            <p className="font-bold text-cherry text-sm sm:text-base pt-1">
+              {isAr
+                ? "أنا اخترت أن أترك هذه العادة، لأن حياتي أكبر منها، ومستقبلي يستحق مني أن أحاول."
+                : "I chose to leave this habit because my life is greater than it, and my future deserves my effort."}
+            </p>
+            <p className="font-bold text-maroon dark:text-[#EDEBDE] text-sm sm:text-base">
+              {isAr ? "ومن هذه اللحظة، أبدأ من جديد." : "And from this moment, I start anew."}
+            </p>
+          </div>
         </div>
 
         {/* Signatures & Footer */}
@@ -437,57 +368,28 @@ export function PledgeDocument({
             </div>
           </div>
 
-          {/* Interactive Signature Canvas Box */}
+          {/* Immutable Permanent Signature Display Area */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-maroon dark:text-[#EDEBDE] flex items-center gap-1.5">
                 <PenTool size={14} className="text-cherry" />
                 <span>{isAr ? "توقيع الأصبع المعتمد:" : "Approved Finger Signature:"}</span>
               </span>
-              {!readOnly && hasSignature && (
-                <button
-                  type="button"
-                  onClick={clearCanvas}
-                  className="flex items-center gap-1 text-xs font-semibold text-cherry hover:underline"
-                >
-                  <Eraser size={13} />{" "}
-                  {isAr ? "مسح التوقيع وإعادة الرسم" : "Clear signature & redraw"}
-                </button>
-              )}
             </div>
 
-            <div className="relative h-32 w-full rounded-2xl border-2 border-dashed border-cherry/40 bg-white/80 overflow-hidden dark:bg-[#121010]">
+            <div className="relative h-28 w-full flex items-center justify-center p-2 bg-transparent">
               {savedSig ? (
-                <div className="flex h-full w-full items-center justify-center p-2">
-                  <img
-                    src={savedSig}
-                    alt="Signature"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
+                <img
+                  src={savedSig}
+                  alt="Signature"
+                  className="max-h-full max-w-full object-contain"
+                />
               ) : (
-                <>
-                  <canvas
-                    ref={canvasRef}
-                    width={450}
-                    height={128}
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    onTouchStart={startDrawing}
-                    onTouchMove={draw}
-                    onTouchEnd={stopDrawing}
-                    className="h-full w-full cursor-crosshair touch-none"
-                  />
-                  {!hasSignature && (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-noir/40 dark:text-cotton/40 font-medium">
-                      {isAr
-                        ? "ارسم توقيعك بأصبعك هنا..."
-                        : "Draw your signature with your finger here..."}
-                    </div>
-                  )}
-                </>
+                <div className="flex items-center justify-center text-xs text-noir/40 dark:text-cotton/40 font-medium">
+                  {isAr
+                    ? "لا يوجد توقيع مسجل"
+                    : "No signature recorded"}
+                </div>
               )}
             </div>
           </div>

@@ -18,6 +18,9 @@ import { PixelHeart } from "@/components/visuals";
 import { waethDeck, pick } from "@/lib/content";
 import { PledgeDocument } from "@/components/pledge-document";
 import { PanicSOS } from "@/components/panic-sos";
+import { SettingsBar } from "@/components/settings-bar";
+import { RecoveryTracker } from "@/components/recovery-tracker";
+import { DailyWisdom } from "@/components/DailyWisdom";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -123,6 +126,20 @@ function Dashboard() {
   const checkedIn = state.lastCheckIn === today;
   const rating = state.ratings[today] ?? null;
 
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("today_rating_entry");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.date === today && parsed?.value && !state.ratings[today]) {
+          set({ ratings: { ...state.ratings, [today]: parsed.value as Rating } });
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [today]);
+
   const toggleHabit = (id: string) => {
     const done = state.todayDone.includes(id);
     const todayDone = done ? state.todayDone.filter((x) => x !== id) : [...state.todayDone, id];
@@ -163,6 +180,14 @@ function Dashboard() {
 
   const relapse = () => {
     const ratings = { ...state.ratings, [today]: "relapsed" as Rating };
+    try {
+      localStorage.setItem(
+        "today_rating_entry",
+        JSON.stringify({ date: today, value: "relapsed", updatedAt: Date.now() })
+      );
+    } catch {
+      /* ignore */
+    }
     if (lastStrike) {
       // Third strike: snapshot the attempt, restart the cycle with full hearts.
       set({
@@ -180,7 +205,20 @@ function Dashboard() {
     setModal(false);
   };
 
-  const rate = (value: Rating) => set({ ratings: { ...state.ratings, [today]: value } });
+  const rate = (value: Rating) => {
+    set({ ratings: { ...state.ratings, [today]: value } });
+    try {
+      localStorage.setItem(
+        "today_rating_entry",
+        JSON.stringify({ date: today, value, updatedAt: Date.now() })
+      );
+    } catch {
+      /* ignore */
+    }
+    if (value === "relapsed") {
+      setModal(true);
+    }
+  };
 
   const ratingOptions: [Rating, string][] = [
     ["excellent", tr("rExcellent")],
@@ -205,72 +243,83 @@ function Dashboard() {
         </div>
       </header>
 
-      {/* Hero timer */}
+      {/* Hero Recovery Tracker - Conditional Render based on state.trackerType */}
       <motion.section
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bento relative mt-6 overflow-hidden p-7"
+        className="mt-6"
       >
-        <div aria-hidden className="pointer-events-none absolute -end-16 -top-16 opacity-[0.07]">
-          <svg width="220" height="220" viewBox="0 0 220 220" fill="none">
-            <circle cx="120" cy="100" r="90" stroke="var(--maroon)" strokeWidth="1.5" />
-            <circle cx="150" cy="130" r="70" stroke="var(--cherry-red)" strokeWidth="1.5" />
-            <circle cx="100" cy="70" r="45" stroke="var(--maroon)" strokeWidth="1.5" />
-          </svg>
-        </div>
-        <p className="text-xs uppercase tracking-[0.2em] text-noir/45">{tr("streak")}</p>
-        <div className="mt-5 flex items-end justify-between gap-2">
-          {(
-            [
-              [pad(time.d, 3), tr("days")],
-              [pad(time.h), tr("hours")],
-              [pad(time.m), tr("minutes")],
-              [pad(time.s), tr("seconds")],
-            ] as const
-          ).map(([v, label], i) => (
-            <div key={label} className="flex items-end gap-2">
-              <div className="text-center">
-                <div className="font-mono text-4xl font-semibold tabular-nums text-maroon sm:text-5xl">
-                  {v}
-                </div>
-                <div className="mt-1 text-[10px] uppercase tracking-widest text-noir/40">
-                  {label}
-                </div>
-              </div>
-              {i < 3 && <span className="pb-6 font-mono text-3xl text-cherry/30">:</span>}
+        {state.trackerType === "classic" ? (
+          <div className="bento relative overflow-hidden p-7">
+            <div aria-hidden className="pointer-events-none absolute -end-16 -top-16 opacity-[0.07]">
+              <svg width="220" height="220" viewBox="0 0 220 220" fill="none">
+                <circle cx="120" cy="100" r="90" stroke="var(--maroon)" strokeWidth="1.5" />
+                <circle cx="150" cy="130" r="70" stroke="var(--cherry-red)" strokeWidth="1.5" />
+                <circle cx="100" cy="70" r="45" stroke="var(--maroon)" strokeWidth="1.5" />
+              </svg>
             </div>
-          ))}
-        </div>
-        {/* XP progress inside the timer card */}
-        <div className="mt-7 border-t border-noir/10 pt-5">
-          <div className="flex items-center justify-between text-xs text-noir/45">
-            <span>
-              {tr("level")} <span className="font-mono text-cherry">{level}</span>
-            </span>
-            <span className="font-mono">
-              {state.xp} {tr("xp")}
-            </span>
+            <p className="text-xs uppercase tracking-[0.2em] text-noir/45">{tr("streak")}</p>
+            <div className="mt-5 flex items-end justify-between gap-2">
+              {(
+                [
+                  [pad(time.d, 3), tr("days")],
+                  [pad(time.h), tr("hours")],
+                  [pad(time.m), tr("minutes")],
+                  [pad(time.s), tr("seconds")],
+                ] as const
+              ).map(([v, label], i) => (
+                <div key={label} className="flex items-end gap-2">
+                  <div className="text-center">
+                    <div className="font-mono text-4xl font-semibold tabular-nums text-maroon sm:text-5xl">
+                      {v}
+                    </div>
+                    <div className="mt-1 text-[10px] uppercase tracking-widest text-noir/40">
+                      {label}
+                    </div>
+                  </div>
+                  {i < 3 && <span className="pb-6 font-mono text-3xl text-cherry/30">:</span>}
+                </div>
+              ))}
+            </div>
+            {/* XP progress inside the timer card */}
+            <div className="mt-7 border-t border-noir/10 pt-5">
+              <div className="flex items-center justify-between text-xs text-noir/45">
+                <span>
+                  {tr("level")} <span className="font-mono text-cherry">{level}</span>
+                </span>
+                <span className="font-mono">
+                  {state.xp} {tr("xp")}
+                </span>
+              </div>
+              <div
+                className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-noir/10"
+                role="progressbar"
+                aria-valuenow={levelXp}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <motion.div
+                  className="h-full rounded-full bg-cherry"
+                  animate={{ width: `${levelXp}%` }}
+                  transition={{ type: "spring", stiffness: 200, damping: 28 }}
+                />
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[11px] text-noir/40">
+                <span>{state.target}</span>
+                <span className="font-mono">
+                  {100 - levelXp} {tr("xp")} {tr("toNextLevel")}
+                </span>
+              </div>
+            </div>
           </div>
-          <div
-            className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-noir/10"
-            role="progressbar"
-            aria-valuenow={levelXp}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <motion.div
-              className="h-full rounded-full bg-cherry"
-              animate={{ width: `${levelXp}%` }}
-              transition={{ type: "spring", stiffness: 200, damping: 28 }}
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-noir/40">
-            <span>{state.target}</span>
-            <span className="font-mono">
-              {100 - levelXp} {tr("xp")} {tr("toNextLevel")}
-            </span>
-          </div>
-        </div>
+        ) : (
+          <RecoveryTracker
+            days={time.d}
+            hours={time.h}
+            minutes={time.m}
+            targetDays={90}
+          />
+        )}
       </motion.section>
 
       {/* Daily check-in & Emergency SOS */}
@@ -312,81 +361,44 @@ function Dashboard() {
       </div>
 
       {/* Interlocking cards: Wa'eth / relapse housing / daily rating */}
+      {/* Dynamic Daily Wisdom (الواعظ) */}
       {!sosModal && (
         <section className="mt-5">
-          <motion.button
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.06 }}
-            onClick={() => setSheet(true)}
-            className="bento cutout-bottom relative w-full overflow-hidden p-7 pb-16 text-start"
-          >
-            <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.05]">
-              <svg width="100%" height="100%" viewBox="0 0 200 120">
-                <g stroke="var(--maroon)" fill="none" strokeWidth="1">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <rect
-                      key={i}
-                      x={10 + i * 24}
-                      y={30}
-                      width="30"
-                      height="30"
-                      transform={`rotate(45 ${25 + i * 24} 45)`}
-                    />
-                  ))}
-                </g>
-              </svg>
-            </div>
-            <div className="relative flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-cherry">{tr("waeth")}</p>
-                <p className="mt-3 font-thamanya text-lg leading-relaxed text-maroon dark:text-[#EDEBDE]">
-                  {pick(waeth.short, state.lang)}
-                </p>
-                <p className="mt-3 text-xs text-noir/45">{pick(waeth.source, state.lang)}</p>
-              </div>
-              <ChevronDown className="mt-1 shrink-0 text-noir/35" size={20} />
-            </div>
-          </motion.button>
+          <DailyWisdom />
+        </section>
+      )}
 
-          {/* Relapse button sits inside the circular housing formed by both cutouts */}
-          <div className="relative z-20 flex h-0 items-center justify-center">
-            <div className="relative h-[104px] w-[104px]">
-              <HazardRing />
+      {/* Daily rating & Relapse trigger */}
+      {!sosModal && (
+        <section className="mt-5">
+          <div className="bento p-6">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs uppercase tracking-[0.2em] font-bold text-noir/50">
+                {tr("rateDay")}
+              </p>
               <button
                 onClick={() => setModal(true)}
-                className="absolute inset-[14px] flex items-center justify-center rounded-full bg-cherry text-center text-[11px] font-bold leading-tight text-cotton shadow-[var(--shadow-float)] transition-transform active:scale-95"
+                className="rounded-full bg-cherry/10 border border-cherry/20 px-3.5 py-1 text-xs font-bold text-cherry hover:bg-cherry hover:text-cotton transition-all active:scale-95 shadow-sm cursor-pointer"
               >
                 {tr("relapse")}
               </button>
             </div>
-          </div>
-
-          <div className="bento cutout-top p-6 pt-16">
-            <p className="text-center text-xs uppercase tracking-[0.2em] font-bold text-noir/50">
-              {tr("rateDay")}
-            </p>
-            <div className="mt-4 grid grid-cols-4 gap-2">
+            <div className="flex items-center justify-center gap-1.5 w-full max-w-sm mx-auto my-2 p-1">
               {ratingOptions.map(([key, label]) => {
-                const active = rating === key;
+                const isSelected = rating === key;
                 return (
                   <button
                     key={key}
+                    type="button"
                     onClick={() => rate(key)}
-                    className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 rounded-2xl px-2 py-3 text-xs font-bold transition-all duration-200 ${
-                      active
-                        ? "border-transparent text-cotton shadow-md scale-[1.02]"
-                        : "border border-noir/10 bg-card/80 text-maroon hover:border-cherry/30"
+                    className={`flex-1 aspect-square min-h-[44px] rounded-xl flex items-center justify-center text-white text-xs font-bold transition-all duration-200 border-none outline-none cursor-pointer ${
+                      isSelected
+                        ? "scale-105 ring-2 ring-white shadow-lg z-10 opacity-100"
+                        : "opacity-80 hover:opacity-100"
                     }`}
-                    style={
-                      active ? { backgroundColor: RATING_COLORS[key], color: "#EDEBDE" } : undefined
-                    }
+                    style={{ backgroundColor: RATING_COLORS[key] }}
                   >
-                    <span
-                      className="h-2 w-2 rounded-full shrink-0"
-                      style={{ background: active ? "#EDEBDE" : RATING_COLORS[key] }}
-                    />
-                    <span className="truncate">{label}</span>
+                    <span>{label}</span>
                   </button>
                 );
               })}
@@ -471,6 +483,11 @@ function Dashboard() {
             {tr("addHabit")}
           </button>
         </div>
+      </section>
+
+      {/* Settings Section */}
+      <section className="mt-5">
+        <SettingsBar defaultExpanded={false} />
       </section>
 
       {/* Wa'eth bottom sheet */}

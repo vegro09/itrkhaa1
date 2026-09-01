@@ -3,20 +3,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { Home, Send, Sparkles } from "lucide-react";
 import Markdown from "react-markdown";
-import { useApp } from "@/lib/app-state";
+import { useApp, todayISO } from "@/lib/app-state";
 import { useT } from "@/lib/i18n";
 
 function cleanArabicOutput(raw: string): string {
   if (!raw) return "";
   let text = raw;
-  // Remove quotation marks or apostrophes around Arabic nicknames or words (e.g., "صديقي" -> صديقي)
-  text = text.replace(/["'«»]([\u0600-\u06FF\s]+)["'«»]/g, "$1");
-  // Remove English technical terms in parentheses if any linger (e.g., (Urge Surfing) -> '')
-  text = text.replace(/\s*\([A-Za-z\s-]+\)/g, "");
-  // Strip raw markdown asterisks (e.g., **word** -> word)
-  text = text.replace(/\*\*(.*?)\*\*/g, "$1");
-  // Strip bullet or numbered list prefixes at start of lines (e.g., "1. ", "- ", "* ")
-  text = text.replace(/^[\s]*[\d\-*]+[.)\s]+/gm, "");
+  // Remove quotation marks or apostrophes around Arabic nicknames (e.g., "صديقي" -> صديقي)
+  text = text.replace(/["'«»]([\u0600-\u06FF\s]{2,15})["'«»]/g, "$1");
   return text;
 }
 
@@ -97,6 +91,23 @@ export function Hakeem() {
         return { from: m.from, text: m.text };
       });
 
+      const todayKey = todayISO();
+      const todayRating = state.ratings[todayKey];
+      const todayMoodLabel =
+        todayRating === "excellent"
+          ? "ممتاز (Excellent)"
+          : todayRating === "good"
+            ? "جيد (Good)"
+            : todayRating === "struggling"
+              ? "أعاني ويوجد صعوبة (Struggling with urge)"
+              : todayRating === "relapsed"
+                ? "انتكست مؤخراً (Recent Relapse)"
+                : "مستقر (Stable / Unrated)";
+
+      const elapsedMs = Math.max(0, Date.now() - state.startedAt);
+      const streakDays = Math.floor(elapsedMs / (1000 * 60 * 60 * 24));
+      const currentStreakText = `${streakDays} ${state.lang === "ar" ? "يوم" : "days"}`;
+
       const response = await fetch("/api/hakeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,7 +119,11 @@ export function Hakeem() {
             target: state.target,
             duration: state.duration,
             triggers: state.triggers,
-            motivation: state.motivation,
+            motivation: state.pledgeGoals || state.motivation,
+            emergencyPlan: state.pledgeEmergencyPlan,
+            currentStreak: currentStreakText,
+            todayMood: todayMoodLabel,
+            activeTone: activeTone === "strict" ? "firm" : activeTone === "empathetic" ? "gentle" : "scientific",
             tone: activeTone,
             hakeemTone: activeTone,
             hakeemLength: state.hakeemLength || "medium",
@@ -151,9 +166,7 @@ export function Hakeem() {
   };
 
   const handleQuickChip = (chipLabel: string) => {
-    const triggerDirective =
-      "[SYSTEM DIRECTIVE: User is experiencing an immediate trigger right now. Provide a concise 3-step grounding exercise/Urge Surfing technique immediately].";
-    send(chipLabel, triggerDirective);
+    send(chipLabel);
   };
 
   const quick = [tr("quick1"), tr("quick2"), tr("quick3"), tr("quick4"), tr("quick5")];

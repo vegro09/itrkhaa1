@@ -28,6 +28,7 @@ export type AppState = {
   habits: Habit[];
   nickname: string;
   tone: "empathetic" | "scientific" | "strict";
+  trackerType: "classic" | "shield";
   hakeemTone: "empathetic" | "scientific" | "strict";
   hakeemLength: "short" | "medium" | "detailed";
   pledgeSignature: string | null;
@@ -83,6 +84,7 @@ export const defaultState: AppState = {
   habits: [],
   nickname: "",
   tone: "empathetic",
+  trackerType: "shield",
   hakeemTone: "empathetic",
   hakeemLength: "medium",
   pledgeSignature: null,

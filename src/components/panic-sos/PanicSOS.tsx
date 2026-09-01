@@ -242,8 +242,10 @@ export function PanicSOS({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      setCurrentStage(1);
     } else {
       document.body.style.overflow = "unset";
+      setCurrentStage(1);
     }
     return () => {
       document.body.style.overflow = "unset";
@@ -253,6 +255,7 @@ export function PanicSOS({
   if (!isOpen) return null;
 
   const close = () => {
+    setCurrentStage(1);
     document.body.style.overflow = "unset";
     onClose();
   };
@@ -264,8 +267,9 @@ export function PanicSOS({
     >
       <div className="flex items-center justify-between">
         <button
+          type="button"
           onClick={close}
-          className="inline-flex items-center gap-2 rounded-full border border-[#EDEBDE]/15 bg-[#EDEBDE]/5 px-4 py-2 text-sm text-[#EDEBDE]/80 transition-colors hover:bg-[#EDEBDE]/10 hover:text-[#EDEBDE]"
+          className="inline-flex items-center gap-2 rounded-full border border-[#EDEBDE]/15 bg-[#EDEBDE]/5 px-4 py-2 text-sm text-[#EDEBDE]/80 transition-colors hover:bg-[#EDEBDE]/10 hover:text-[#EDEBDE] cursor-pointer"
         >
           <X className="h-4 w-4" strokeWidth={1.75} />
           خروج
@@ -285,12 +289,12 @@ export function PanicSOS({
 
       <AnimatePresence mode="wait">
         {currentStage === 1 ? (
-          <BreathingStage key="s1" onNext={() => setCurrentStage(2)} />
+          <BreathingStage key={`s1-${isOpen}`} onNext={() => setCurrentStage(2)} />
         ) : currentStage === 2 ? (
-          <ChallengeStage key="s2" onNext={() => setCurrentStage(3)} />
+          <ChallengeStage key={`s2-${isOpen}`} onNext={() => setCurrentStage(3)} />
         ) : (
           <OathStage
-            key="s3"
+            key={`s3-${isOpen}`}
             pledgeText={pledgeText}
             escapePlan={escapePlan}
             signatureDataUrl={signatureDataUrl}

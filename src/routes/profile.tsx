@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { motion } from "motion/react";
-import { LogOut, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { LogOut, FileText, PenTool, ChevronDown } from "lucide-react";
 import { useApp, todayISO, type Lang } from "@/lib/app-state";
 import { useT } from "@/lib/i18n";
 import { PixelHeart } from "@/components/visuals";
 import { PledgeDocument } from "@/components/pledge-document";
+import { SignatureModal } from "@/components/signature-modal";
+import { SettingsBar } from "@/components/settings-bar";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -62,9 +64,30 @@ function Profile() {
   const navigate = useNavigate();
 
   const [mounted, setMounted] = useState(false);
+  const [pledgeOpen, setPledgeOpen] = useState(false);
+  const [sigModalOpen, setSigModalOpen] = useState(false);
+
   useEffect(() => {
     setMounted(true);
+    try {
+      const storedSig = localStorage.getItem("userSignature") || localStorage.getItem("pledgeSignature");
+      if (storedSig && !state.pledgeSignature) {
+        set({ pledgeSignature: storedSig });
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
+
+  const handleSaveSignature = (sigDataUrl: string) => {
+    set({ pledgeSignature: sigDataUrl });
+    try {
+      localStorage.setItem("userSignature", sigDataUrl);
+      localStorage.setItem("pledgeSignature", sigDataUrl);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const total = state.habits.length || 1;
   const start = new Date(state.startedAt);
@@ -179,92 +202,83 @@ function Profile() {
         </section>
       )}
 
-      {/* The Pledge Section */}
-      <section className="bento mt-5 space-y-4 p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-noir/55 flex items-center gap-2">
-            <FileText size={16} className="text-cherry" />
-            <span>{tr("pledgeTitle")}</span>
-          </h2>
-        </div>
-        <PledgeDocument
-          reasons={state.pledgeReasons || state.damage.join("، ")}
-          impacts={state.pledgeImpacts || state.postEmotions.join("، ")}
-          goals={state.pledgeGoals || state.motivation || ""}
-          emergencyPlan={state.pledgeEmergencyPlan || tr("pledgeDefaultEmergency")}
-          nickname={state.nickname}
-          initialSignature={state.pledgeSignature}
-          onSaveSignature={(sig) => set({ pledgeSignature: sig })}
-          onChangeFields={(fields) =>
-            set({
-              pledgeReasons: fields.reasons ?? state.pledgeReasons,
-              pledgeImpacts: fields.impacts ?? state.pledgeImpacts,
-              pledgeGoals: fields.goals ?? state.pledgeGoals,
-              pledgeEmergencyPlan: fields.emergencyPlan ?? state.pledgeEmergencyPlan,
-            })
-          }
-        />
+      {/* The Pledge Section (Collapsible - default closed) */}
+      <section className="bento mt-5 overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => setPledgeOpen(!pledgeOpen)}
+          className="flex w-full items-center justify-between p-6 text-start transition-colors hover:bg-noir/5 cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cherry/10 text-cherry">
+              <FileText size={20} />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-maroon dark:text-[#EDEBDE]">
+                {tr("pledgeTitle")}
+              </h2>
+              <p className="text-xs text-noir/45">
+                {state.lang === "ar"
+                  ? "انقر لاستعراض وثيقة العهد والتوقيع"
+                  : "Click to view pledge document and signature"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {state.pledgeSignature && (
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-cherry/10 px-3 py-1 text-[11px] font-bold text-cherry">
+                ✓ {state.lang === "ar" ? "موقع" : "Signed"}
+              </span>
+            )}
+            <motion.div animate={{ rotate: pledgeOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown size={18} className="text-noir/40" />
+            </motion.div>
+          </div>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {pledgeOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="overflow-hidden border-t border-noir/10 p-6 pt-4 bg-card/40"
+            >
+              <PledgeDocument
+                reasons={state.pledgeReasons || state.damage.join("، ")}
+                impacts={state.pledgeImpacts || state.postEmotions.join("، ")}
+                goals={state.pledgeGoals || state.motivation || ""}
+                emergencyPlan={state.pledgeEmergencyPlan || tr("pledgeDefaultEmergency")}
+                nickname={state.nickname}
+                initialSignature={state.pledgeSignature}
+                onSaveSignature={handleSaveSignature}
+                onChangeFields={(fields) =>
+                  set({
+                    pledgeReasons: fields.reasons ?? state.pledgeReasons,
+                    pledgeImpacts: fields.impacts ?? state.pledgeImpacts,
+                    pledgeGoals: fields.goals ?? state.pledgeGoals,
+                    pledgeEmergencyPlan: fields.emergencyPlan ?? state.pledgeEmergencyPlan,
+                  })
+                }
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
-      <section className="bento mt-5 space-y-5 p-6">
-        <h2 className="text-sm font-medium text-noir/55">{tr("settings")}</h2>
-
-        <div className="space-y-2">
-          <p className="text-xs text-noir/45">{tr("language")}</p>
-          <Segment<Lang>
-            value={state.lang}
-            options={[
-              ["ar", "العربية"],
-              ["en", "English"],
-            ]}
-            onChange={(lang) => set({ lang })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs text-noir/45">{tr("theme")}</p>
-          <Segment<"light" | "dark">
-            value={state.theme}
-            options={[
-              ["light", tr("light")],
-              ["dark", tr("dark")],
-            ]}
-            onChange={(theme) => set({ theme })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs text-noir/45">{tr("tone")}</p>
-          <Segment<"empathetic" | "scientific" | "strict">
-            value={state.tone}
-            options={[
-              ["empathetic", tr("empathetic")],
-              ["scientific", tr("scientific")],
-              ["strict", tr("strict")],
-            ]}
-            onChange={(tone) => set({ tone, hakeemTone: tone })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs text-noir/45">{tr("hakeemLength")}</p>
-          <Segment<"short" | "medium" | "detailed">
-            value={state.hakeemLength || "medium"}
-            options={[
-              ["short", tr("lengthShort")],
-              ["medium", tr("lengthMedium")],
-              ["detailed", tr("lengthDetailed")],
-            ]}
-            onChange={(hakeemLength) => set({ hakeemLength })}
-          />
-        </div>
+      {/* Consolidated Settings Section */}
+      <section className="mt-5 space-y-4">
+        <SettingsBar defaultExpanded={false} />
 
         <button
+          type="button"
           onClick={() => {
             reset();
             navigate({ to: "/" });
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-cherry/30 py-3.5 text-sm text-cherry"
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-cherry/30 py-3.5 text-sm text-cherry transition-colors hover:bg-cherry/10 cursor-pointer"
         >
           <LogOut size={16} />
           {tr("logout")}
