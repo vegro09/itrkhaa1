@@ -23,23 +23,23 @@
   --color-maroon: var(--maroon);
   --color-noir: var(--noir-black);
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-card: var(--color-card);
   --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
+  --color-popover: var(--color-card);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
+  --color-primary: var(--color-primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
+  --color-accent: var(--color-accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
+  --color-border: var(--color-border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
@@ -51,66 +51,247 @@
   --shadow-float: 0 20px 50px -20px rgb(99 1 2 / 0.35);
 }
 
-:root {
-  --radius: 1.5rem;
-
-  --cotton: #edebde;
-  --cherry-red: #810100;
-  --maroon: #630102;
-  --noir-black: #1b1716;
-
-  --sos-bg: oklch(0.19 0.004 40);
-  --sos-ink: oklch(0.93 0.018 95);
-  --sos-accent: oklch(0.38 0.163 29);
-
-  --background: #edebde;
-  --foreground: #630102;
-  --card: #f4f2e8;
-  --card-foreground: #630102;
-  --popover: #f4f2e8;
-  --popover-foreground: #630102;
-  --primary: #810100;
-  --primary-foreground: #edebde;
-  --secondary: #e3e0d0;
-  --secondary-foreground: #630102;
-  --muted: #e3e0d0;
-  --muted-foreground: #6b6560;
-  --accent: #e3e0d0;
-  --accent-foreground: #810100;
-  --destructive: #810100;
-  --destructive-foreground: #edebde;
-  --border: rgb(27 23 22 / 0.08);
-  --input: rgb(27 23 22 / 0.12);
-  --ring: #810100;
-}
-
-.dark {
-  /* Noir slate base. Cotton stays light so it can keep acting as
-     the readable foreground on cherry surfaces. */
-  --cotton: #edebde;
-  /* Primary text tokens flip to cotton for readability on dark. */
-  --maroon: #edebde;
-  --noir-black: #edebde;
-
-  --background: #121010;
-  --foreground: #edebde;
-  --card: #1b1716;
-  --card-foreground: #edebde;
-  --popover: #1b1716;
-  --popover-foreground: #edebde;
-  --primary: #810100;
-  --primary-foreground: #edebde;
-  --secondary: #241f1e;
-  --secondary-foreground: #edebde;
-  --muted: #241f1e;
-  --muted-foreground: #a89f97;
-  --accent: #241f1e;
-  --accent-foreground: #edebde;
-  --border: rgb(237 235 222 / 0.1);
-  --input: rgb(237 235 222 / 0.14);
-}
-
 @layer base {
+  /* 1. Warm Classic (Default) */
+  :root, [data-theme="classic"] {
+    --color-background: #FAF7F2;
+    --color-foreground: #121010;
+    --color-primary: #810100;
+    --color-accent: #D4A373;
+    --color-card: #FFFFFF;
+    --color-border: rgba(212, 163, 115, 0.2);
+
+    --radius: 1.5rem;
+    --background: #FAF7F2;
+    --foreground: #121010;
+    --card: #FFFFFF;
+    --card-foreground: #121010;
+    --popover: #FFFFFF;
+    --popover-foreground: #121010;
+    --primary: #810100;
+    --primary-foreground: #FAF7F2;
+    --secondary: #F0EAE1;
+    --secondary-foreground: #121010;
+    --muted: #F0EAE1;
+    --muted-foreground: #6b6560;
+    --accent: #D4A373;
+    --accent-foreground: #810100;
+    --destructive: #810100;
+    --destructive-foreground: #FAF7F2;
+    --border: rgba(212, 163, 115, 0.2);
+    --input: rgba(212, 163, 115, 0.2);
+    --ring: #810100;
+
+    --cotton: #FAF7F2;
+    --cherry-red: #810100;
+    --maroon: #121010;
+    --noir-black: #121010;
+
+    --sos-bg: oklch(0.19 0.004 40);
+    --sos-ink: oklch(0.93 0.018 95);
+    --sos-accent: oklch(0.38 0.163 29);
+  }
+
+  /* 2. Deep Ocean (Male) */
+  [data-theme="ocean"] {
+    --color-background: #F4F7F9;
+    --color-foreground: #0F172A;
+    --color-primary: #0F172A;
+    --color-accent: #14B8A6;
+    --color-card: #FFFFFF;
+    --color-border: rgba(15, 23, 42, 0.1);
+
+    --radius: 1.5rem;
+    --background: #F4F7F9;
+    --foreground: #0F172A;
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
+    --primary: #0F172A;
+    --primary-foreground: #FFFFFF;
+    --secondary: #E2E8F0;
+    --secondary-foreground: #0F172A;
+    --muted: #E2E8F0;
+    --muted-foreground: #64748B;
+    --accent: #14B8A6;
+    --accent-foreground: #FFFFFF;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    --border: rgba(15, 23, 42, 0.1);
+    --input: rgba(15, 23, 42, 0.1);
+    --ring: #14B8A6;
+
+    --cotton: #F4F7F9;
+    --cherry-red: #14B8A6;
+    --maroon: #0F172A;
+    --noir-black: #0F172A;
+
+    --sos-bg: oklch(0.19 0.004 40);
+    --sos-ink: oklch(0.93 0.018 95);
+    --sos-accent: #14B8A6;
+  }
+
+  /* 3. Pine Forest (Male) */
+  [data-theme="pine"] {
+    --color-background: #F0F4F1;
+    --color-foreground: #081C15;
+    --color-primary: #1B4332;
+    --color-accent: #B07D62;
+    --color-card: #FFFFFF;
+    --color-border: rgba(27, 67, 50, 0.1);
+
+    --radius: 1.5rem;
+    --background: #F0F4F1;
+    --foreground: #081C15;
+    --card: #FFFFFF;
+    --card-foreground: #081C15;
+    --popover: #FFFFFF;
+    --popover-foreground: #081C15;
+    --primary: #1B4332;
+    --primary-foreground: #FFFFFF;
+    --secondary: #D8F3DC;
+    --secondary-foreground: #081C15;
+    --muted: #D8F3DC;
+    --muted-foreground: #52796F;
+    --accent: #B07D62;
+    --accent-foreground: #FFFFFF;
+    --destructive: #9D0208;
+    --destructive-foreground: #FFFFFF;
+    --border: rgba(27, 67, 50, 0.1);
+    --input: rgba(27, 67, 50, 0.1);
+    --ring: #1B4332;
+
+    --cotton: #F0F4F1;
+    --cherry-red: #1B4332;
+    --maroon: #081C15;
+    --noir-black: #081C15;
+
+    --sos-bg: oklch(0.19 0.004 40);
+    --sos-ink: oklch(0.93 0.018 95);
+    --sos-accent: #1B4332;
+  }
+
+  /* 4. Midnight Zen (Dark Mode) */
+  [data-theme="midnight"], .dark {
+    --color-background: #09090B;
+    --color-foreground: #E4E4E7;
+    --color-primary: #E4E4E7;
+    --color-accent: #6366F1;
+    --color-card: #18181B;
+    --color-border: rgba(255, 255, 255, 0.1);
+
+    --radius: 1.5rem;
+    --background: #09090B;
+    --foreground: #E4E4E7;
+    --card: #18181B;
+    --card-foreground: #E4E4E7;
+    --popover: #18181B;
+    --popover-foreground: #E4E4E7;
+    --primary: #6366F1;
+    --primary-foreground: #FFFFFF;
+    --secondary: #27272A;
+    --secondary-foreground: #E4E4E7;
+    --muted: #27272A;
+    --muted-foreground: #A1A1AA;
+    --accent: #6366F1;
+    --accent-foreground: #FFFFFF;
+    --destructive: #F43F5E;
+    --destructive-foreground: #FFFFFF;
+    --border: rgba(255, 255, 255, 0.1);
+    --input: rgba(255, 255, 255, 0.1);
+    --ring: #6366F1;
+
+    --cotton: #E4E4E7;
+    --cherry-red: #6366F1;
+    --maroon: #E4E4E7;
+    --noir-black: #E4E4E7;
+
+    --sos-bg: #09090B;
+    --sos-ink: #E4E4E7;
+    --sos-accent: #6366F1;
+  }
+
+  /* 5. Lavender Bloom (Female) */
+  [data-theme="lavender"] {
+    --color-background: #F9F8FC;
+    --color-foreground: #2D2338;
+    --color-primary: #7E609A;
+    --color-accent: #D4A5A5;
+    --color-card: #FFFFFF;
+    --color-border: rgba(126, 96, 154, 0.15);
+
+    --radius: 1.5rem;
+    --background: #F9F8FC;
+    --foreground: #2D2338;
+    --card: #FFFFFF;
+    --card-foreground: #2D2338;
+    --popover: #FFFFFF;
+    --popover-foreground: #2D2338;
+    --primary: #7E609A;
+    --primary-foreground: #FFFFFF;
+    --secondary: #EDE7F6;
+    --secondary-foreground: #2D2338;
+    --muted: #EDE7F6;
+    --muted-foreground: #7E609A;
+    --accent: #D4A5A5;
+    --accent-foreground: #2D2338;
+    --destructive: #9C27B0;
+    --destructive-foreground: #FFFFFF;
+    --border: rgba(126, 96, 154, 0.15);
+    --input: rgba(126, 96, 154, 0.15);
+    --ring: #7E609A;
+
+    --cotton: #F9F8FC;
+    --cherry-red: #7E609A;
+    --maroon: #2D2338;
+    --noir-black: #2D2338;
+
+    --sos-bg: #2D2338;
+    --sos-ink: #F9F8FC;
+    --sos-accent: #7E609A;
+  }
+
+  /* 6. Morning Dew (Female) */
+  [data-theme="dew"] {
+    --color-background: #FDFBF7;
+    --color-foreground: #2C3D30;
+    --color-primary: #84A98C;
+    --color-accent: #F2CC8F;
+    --color-card: #FFFFFF;
+    --color-border: rgba(132, 169, 140, 0.15);
+
+    --radius: 1.5rem;
+    --background: #FDFBF7;
+    --foreground: #2C3D30;
+    --card: #FFFFFF;
+    --card-foreground: #2C3D30;
+    --popover: #FFFFFF;
+    --popover-foreground: #2C3D30;
+    --primary: #84A98C;
+    --primary-foreground: #FFFFFF;
+    --secondary: #E8F0EA;
+    --secondary-foreground: #2C3D30;
+    --muted: #E8F0EA;
+    --muted-foreground: #52796F;
+    --accent: #F2CC8F;
+    --accent-foreground: #2C3D30;
+    --destructive: #E07A5F;
+    --destructive-foreground: #FFFFFF;
+    --border: rgba(132, 169, 140, 0.15);
+    --input: rgba(132, 169, 140, 0.15);
+    --ring: #84A98C;
+
+    --cotton: #FDFBF7;
+    --cherry-red: #84A98C;
+    --maroon: #2C3D30;
+    --noir-black: #2C3D30;
+
+    --sos-bg: #2C3D30;
+    --sos-ink: #FDFBF7;
+    --sos-accent: #84A98C;
+  }
+
   * {
     border-color: var(--color-border);
   }
@@ -129,9 +310,9 @@
 }
 
 @utility bento {
-  background-color: color-mix(in srgb, var(--card) 78%, transparent);
+  background-color: color-mix(in srgb, var(--card) 82%, transparent);
   backdrop-filter: blur(14px);
-  border: 1px solid color-mix(in srgb, var(--noir-black) 8%, transparent);
+  border: 1px solid var(--border);
   border-radius: 32px;
   box-shadow: var(--shadow-bento);
 }

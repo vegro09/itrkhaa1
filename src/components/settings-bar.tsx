@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Settings, ChevronDown, Moon, Sun, Globe, Sliders, Volume2, Shield } from "lucide-react";
 import { useApp, type Lang } from "@/lib/app-state";
 import { useT } from "@/lib/i18n";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { THEMES } from "@/hooks/use-theme";
 
 function Segment<T extends string>({
   value,
@@ -70,7 +72,9 @@ export function SettingsBar({ defaultExpanded = false }: { defaultExpanded?: boo
 
         <div className="flex items-center gap-2">
           <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-noir/10 bg-card/60 px-3 py-1 text-[11px] font-medium text-noir/60">
-            {state.lang === "ar" ? "العربية" : "English"} · {state.theme === "dark" ? (isAr ? "داكن" : "Dark") : (isAr ? "فاتح" : "Light")}
+            {state.lang === "ar" ? "العربية" : "English"} ·{" "}
+            {THEMES.find((t) => t.id === (state.user_theme || "classic"))?.[isAr ? "name" : "nameEn"] ||
+              (isAr ? "الكلاسيكي" : "Classic")}
           </span>
           <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
             <ChevronDown size={18} className="text-noir/40" />
@@ -89,6 +93,9 @@ export function SettingsBar({ defaultExpanded = false }: { defaultExpanded?: boo
             className="overflow-hidden"
           >
             <div className="border-t border-noir/10 p-5 space-y-4 bg-card/40">
+              {/* App Appearance / Theme Selector */}
+              <ThemeSwitcher />
+
               {/* Language */}
               <div className="space-y-2">
                 <p className="text-xs font-medium text-noir/50 flex items-center gap-1.5">
@@ -102,26 +109,6 @@ export function SettingsBar({ defaultExpanded = false }: { defaultExpanded?: boo
                     ["en", "English"],
                   ]}
                   onChange={(lang) => set({ lang })}
-                />
-              </div>
-
-              {/* Theme */}
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-noir/50 flex items-center gap-1.5">
-                  {state.theme === "dark" ? (
-                    <Moon size={14} className="text-cherry" />
-                  ) : (
-                    <Sun size={14} className="text-cherry" />
-                  )}
-                  <span>{tr("theme")}</span>
-                </p>
-                <Segment<"light" | "dark">
-                  value={state.theme}
-                  options={[
-                    ["light", tr("light")],
-                    ["dark", tr("dark")],
-                  ]}
-                  onChange={(theme) => set({ theme })}
                 />
               </div>
 

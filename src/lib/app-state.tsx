@@ -8,6 +8,7 @@ export type Attempt = { startedAt: number; endedAt: number };
 export type AppState = {
   lang: Lang;
   theme: "light" | "dark";
+  user_theme?: "classic" | "ocean" | "pine" | "midnight" | "lavender" | "dew";
   authenticated: boolean;
   authType: "anonymous" | "email" | null;
   username: string;
@@ -64,6 +65,7 @@ export const todayISO = (d: Date = new Date()) => {
 export const defaultState: AppState = {
   lang: "ar",
   theme: "light",
+  user_theme: "classic",
   authenticated: false,
   authType: null,
   username: "",
@@ -124,13 +126,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
+      const storedTheme = localStorage.getItem("user_theme");
       if (raw) {
         const parsed = { ...defaultState, ...(JSON.parse(raw) as Partial<AppState>) };
+        if (storedTheme) {
+          parsed.user_theme = storedTheme as AppState["user_theme"];
+        }
         if (parsed.todayKey !== todayISO()) {
           parsed.todayKey = todayISO();
           parsed.todayDone = [];
         }
         setState(parsed);
+      } else if (storedTheme) {
+        setState((s) => ({ ...s, user_theme: storedTheme as AppState["user_theme"] }));
+      }
+      if (storedTheme && typeof document !== "undefined") {
+        document.documentElement.setAttribute("data-theme", storedTheme);
+        document.documentElement.classList.toggle("dark", storedTheme === "midnight");
       }
     } catch {
       /* ignore corrupted storage */
@@ -147,8 +159,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (typeof document === "undefined") return;
     document.documentElement.lang = state.lang;
     document.documentElement.dir = state.lang === "ar" ? "rtl" : "ltr";
-    document.documentElement.classList.toggle("dark", state.theme === "dark");
-  }, [state.lang, state.theme]);
+    const currentTheme = state.user_theme || "classic";
+    document.documentElement.setAttribute("data-theme", currentTheme);
+    document.documentElement.classList.toggle(
+      "dark",
+      state.theme === "dark" || currentTheme === "midnight",
+    );
+  }, [state.lang, state.theme, state.user_theme]);
 
   const value = useMemo<Ctx>(
     () => ({

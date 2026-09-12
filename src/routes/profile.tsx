@@ -8,6 +8,7 @@ import { PixelHeart } from "@/components/visuals";
 import { PledgeDocument } from "@/components/pledge-document";
 import { SignatureModal } from "@/components/signature-modal";
 import { SettingsBar } from "@/components/settings-bar";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -266,6 +267,11 @@ function Profile() {
             </motion.div>
           )}
         </AnimatePresence>
+      </section>
+
+      {/* App Appearance / Theme Selector */}
+      <section className="bento mt-5 p-6">
+        <ThemeSwitcher />
       </section>
 
       {/* Consolidated Settings Section */}
