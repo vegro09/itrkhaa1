@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { ShieldCheck, Eraser, PenTool } from "lucide-react";
+import { ShieldCheck, Eraser, PenTool, CheckCircle2, Sparkles } from "lucide-react";
 import { useApp, type Lang } from "@/lib/app-state";
 
 export interface PledgeDocumentProps {
@@ -42,6 +42,7 @@ export function PledgeDocument({
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(!!initialSignature);
   const [savedSig, setSavedSig] = useState<string | null>(initialSignature || null);
+  const [hasDrawnStroke, setHasDrawnStroke] = useState(!!initialSignature);
 
   // Local state for interactive text areas
   const [fieldReasons, setFieldReasons] = useState(reasons);
@@ -69,24 +70,9 @@ export function PledgeDocument({
     if (initialSignature) {
       setSavedSig(initialSignature);
       setHasSignature(true);
+      setHasDrawnStroke(true);
     }
   }, [initialSignature]);
-
-  const updateFields = (patch: {
-    reasons?: string;
-    impacts?: string;
-    goals?: string;
-    emergencyPlan?: string;
-  }) => {
-    if (onChangeFields) {
-      onChangeFields({
-        reasons: patch.reasons ?? fieldReasons,
-        impacts: patch.impacts ?? fieldImpacts,
-        goals: patch.goals ?? fieldGoals,
-        emergencyPlan: patch.emergencyPlan ?? fieldEmergencyPlan,
-      });
-    }
-  };
 
   // Canvas drawing routines
   const getCoordinates = (
@@ -104,8 +90,8 @@ export function PledgeDocument({
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
     } else if ("clientX" in e) {
-      clientX = e.clientX;
-      clientY = e.clientY;
+      clientX = (e as React.MouseEvent).clientX;
+      clientY = (e as React.MouseEvent).clientY;
     }
 
     return {
@@ -117,13 +103,14 @@ export function PledgeDocument({
   const startDrawing = (
     e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
   ) => {
-    if (readOnly || savedSig) return;
+    if (readOnly) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     setIsDrawing(true);
+    setHasDrawnStroke(true);
     const coords = getCoordinates(e, canvas);
 
     ctx.beginPath();
@@ -131,7 +118,7 @@ export function PledgeDocument({
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || readOnly || savedSig) return;
+    if (!isDrawing || readOnly) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -146,7 +133,6 @@ export function PledgeDocument({
 
     ctx.lineTo(coords.x, coords.y);
     ctx.stroke();
-    setHasSignature(true);
   };
 
   const stopDrawing = () => {
@@ -156,6 +142,7 @@ export function PledgeDocument({
     if (canvas && onSaveSignature) {
       const dataUrl = canvas.toDataURL("image/png");
       setSavedSig(dataUrl);
+      setHasSignature(true);
       onSaveSignature(dataUrl);
     }
   };
@@ -168,9 +155,30 @@ export function PledgeDocument({
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
+    setHasDrawnStroke(false);
     setHasSignature(false);
     setSavedSig(null);
     if (onSaveSignature) onSaveSignature("");
+  };
+
+  const signWithName = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = "italic bold 32px 'Thamanya', 'Amiri', serif";
+    ctx.fillStyle = "#810100";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(nickname || (isAr ? "البطل" : "Hero"), canvas.width / 2, canvas.height / 2);
+
+    const dataUrl = canvas.toDataURL("image/png");
+    setSavedSig(dataUrl);
+    setHasSignature(true);
+    setHasDrawnStroke(true);
+    if (onSaveSignature) onSaveSignature(dataUrl);
   };
 
   const todayDate = new Date().toLocaleDateString(isAr ? "ar-EG" : "en-US", {
@@ -355,7 +363,7 @@ export function PledgeDocument({
         <div className="pt-4 border-t-2 border-dashed border-[#D4CBB0]/80 dark:border-[#3D3530] space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-bold text-maroon dark:text-[#EDEBDE]">
             <div className="flex items-center gap-1.5">
-              <span>{isAr ? "التوقيع:" : "Signature:"}</span>
+              <span>{isAr ? "الاسم:" : "Name:"}</span>
               <span className="font-mono text-cherry text-base underline underline-offset-4 decoration-cherry/40">
                 {nickname || (isAr ? "البطل" : "Hero")}
               </span>
@@ -368,30 +376,75 @@ export function PledgeDocument({
             </div>
           </div>
 
-          {/* Immutable Permanent Signature Display Area */}
-          <div className="space-y-2">
+          {/* Signature Section */}
+          <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-maroon dark:text-[#EDEBDE] flex items-center gap-1.5">
                 <PenTool size={14} className="text-cherry" />
                 <span>{isAr ? "توقيع الأصبع المعتمد:" : "Approved Finger Signature:"}</span>
               </span>
+              {!readOnly && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={signWithName}
+                    className="inline-flex items-center gap-1 text-[11px] text-cherry font-medium hover:underline cursor-pointer bg-cherry/10 px-2.5 py-1 rounded-full border border-cherry/20"
+                  >
+                    <Sparkles size={12} />
+                    <span>{isAr ? "توقيع سريع بالاسم" : "Quick Name Sign"}</span>
+                  </button>
+                  {(hasDrawnStroke || savedSig) && (
+                    <button
+                      type="button"
+                      onClick={clearCanvas}
+                      className="inline-flex items-center gap-1 text-[11px] text-noir/60 hover:text-cherry font-medium hover:underline cursor-pointer"
+                    >
+                      <Eraser size={12} />
+                      <span>{isAr ? "مسح" : "Clear"}</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="relative h-28 w-full flex items-center justify-center p-2 bg-transparent">
-              {savedSig ? (
+            {/* If in read-only mode with saved signature */}
+            {readOnly && savedSig ? (
+              <div className="relative h-28 w-full flex items-center justify-center p-2 bg-transparent">
                 <img
                   src={savedSig}
                   alt="Signature"
                   className="max-h-full max-w-full object-contain"
                 />
-              ) : (
-                <div className="flex items-center justify-center text-xs text-noir/40 dark:text-cotton/40 font-medium">
-                  {isAr
-                    ? "لا يوجد توقيع مسجل"
-                    : "No signature recorded"}
-                </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              /* Interactive Canvas Pad for signing right inside the document */
+              <div className="relative h-32 w-full rounded-2xl border-2 border-dashed border-[#D4CBB0] dark:border-[#3D3530] bg-[#F4F0E2]/60 dark:bg-[#241F1E]/60 overflow-hidden cursor-crosshair">
+                <canvas
+                  ref={canvasRef}
+                  width={500}
+                  height={128}
+                  onMouseDown={startDrawing}
+                  onMouseMove={draw}
+                  onMouseUp={stopDrawing}
+                  onMouseLeave={stopDrawing}
+                  onTouchStart={startDrawing}
+                  onTouchMove={draw}
+                  onTouchEnd={stopDrawing}
+                  className="h-full w-full touch-none"
+                />
+                {!hasDrawnStroke && !savedSig && (
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-xs text-noir/40 dark:text-cotton/40 font-medium">
+                    <span>{isAr ? "✍️ ارسم توقيعك هنا بأصبعك أو بالماوس..." : "✍️ Draw your signature here with finger or mouse..."}</span>
+                  </div>
+                )}
+                {hasSignature && (
+                  <div className="pointer-events-none absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-cherry/10 px-2 py-0.5 text-[10px] font-bold text-cherry">
+                    <CheckCircle2 size={12} />
+                    <span>{isAr ? "تم اعتماد التوقيع" : "Signature Saved"}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
