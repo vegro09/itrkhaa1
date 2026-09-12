@@ -74,7 +74,7 @@ export function SettingsBar({ defaultExpanded = false }: { defaultExpanded?: boo
           <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-noir/10 bg-card/60 px-3 py-1 text-[11px] font-medium text-noir/60">
             {state.lang === "ar" ? "العربية" : "English"} ·{" "}
             {THEMES.find((t) => t.id === (state.user_theme || "classic"))?.[isAr ? "name" : "nameEn"] ||
-              (isAr ? "الكلاسيكي" : "Classic")}
+              (isAr ? "الكلاسيكي الأصلي" : "Classic Original")}
           </span>
           <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
             <ChevronDown size={18} className="text-noir/40" />

@@ -102,7 +102,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('user_theme')||'classic';document.documentElement.setAttribute('data-theme',t);if(t==='midnight'){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme_preference')||localStorage.getItem('user_theme')||'classic';document.documentElement.setAttribute('data-theme',t);var d=localStorage.getItem('darkMode');var isDark=d!==null?(d==='true'):(localStorage.getItem('leave-it:v1')||'').indexOf('"theme":"dark"')!==-1;if(isDark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`,
           }}
         />
         <HeadContent />

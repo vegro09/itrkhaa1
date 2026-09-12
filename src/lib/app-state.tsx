@@ -8,7 +8,7 @@ export type Attempt = { startedAt: number; endedAt: number };
 export type AppState = {
   lang: Lang;
   theme: "light" | "dark";
-  user_theme?: "classic" | "ocean" | "pine" | "midnight" | "lavender" | "dew";
+  user_theme?: "classic" | "bordo" | "coral" | "venice" | "rose" | "castro";
   authenticated: boolean;
   authType: "anonymous" | "email" | null;
   username: string;
@@ -126,23 +126,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      const storedTheme = localStorage.getItem("user_theme");
+      const storedTheme =
+        localStorage.getItem("theme_preference") || localStorage.getItem("user_theme");
+      const storedDark = localStorage.getItem("darkMode");
+
       if (raw) {
         const parsed = { ...defaultState, ...(JSON.parse(raw) as Partial<AppState>) };
         if (storedTheme) {
           parsed.user_theme = storedTheme as AppState["user_theme"];
+        }
+        if (storedDark !== null) {
+          parsed.theme = storedDark === "true" ? "dark" : "light";
         }
         if (parsed.todayKey !== todayISO()) {
           parsed.todayKey = todayISO();
           parsed.todayDone = [];
         }
         setState(parsed);
-      } else if (storedTheme) {
-        setState((s) => ({ ...s, user_theme: storedTheme as AppState["user_theme"] }));
+      } else {
+        setState((s) => ({
+          ...s,
+          ...(storedTheme ? { user_theme: storedTheme as AppState["user_theme"] } : {}),
+          ...(storedDark !== null ? { theme: storedDark === "true" ? "dark" : "light" } : {}),
+        }));
       }
-      if (storedTheme && typeof document !== "undefined") {
-        document.documentElement.setAttribute("data-theme", storedTheme);
-        document.documentElement.classList.toggle("dark", storedTheme === "midnight");
+
+      if (typeof document !== "undefined") {
+        const activeTheme = storedTheme || "classic";
+        const isDark =
+          storedDark !== null ? storedDark === "true" : raw?.includes('"theme":"dark"');
+        document.documentElement.setAttribute("data-theme", activeTheme);
+        document.documentElement.classList.toggle("dark", !!isDark);
       }
     } catch {
       /* ignore corrupted storage */
@@ -161,10 +175,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.documentElement.dir = state.lang === "ar" ? "rtl" : "ltr";
     const currentTheme = state.user_theme || "classic";
     document.documentElement.setAttribute("data-theme", currentTheme);
-    document.documentElement.classList.toggle(
-      "dark",
-      state.theme === "dark" || currentTheme === "midnight",
-    );
+    document.documentElement.classList.toggle("dark", state.theme === "dark");
   }, [state.lang, state.theme, state.user_theme]);
 
   const value = useMemo<Ctx>(
